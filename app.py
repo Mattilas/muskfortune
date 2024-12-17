@@ -9,24 +9,63 @@ st.set_page_config(page_title="Fortune d'Elon Musk", page_icon="💰", layout="w
 # Actualisation automatique toutes les 10 secondes
 st_autorefresh(interval=10_000, limit=None, key="wealth_refresh")
 
-# CSS moderne avec design épuré
+# Constantes
+TESLA_SHARES = 411_930_000
+SPACEX_VALUE = 147_000_000_000
+XAI_VALUE = 27_000_000_000
+X_VALUE = 19_000_000_000
+
+# Fonctions utilitaires
+def format_money(amount):
+    return f"{amount:,.0f} $"
+
+def get_tesla_price():
+    def attempt():
+        ticker = yf.Ticker("TSLA")
+        hist = ticker.history(period="1d")
+        if not hist.empty and 'Close' in hist.columns:
+            return hist['Close'].iloc[-1]
+        return None
+
+    price = attempt()
+    if price is None:
+        price = attempt()
+    return price
+
+def calculate_wealth():
+    price = get_tesla_price()
+    if price is None:
+        return None
+        
+    tesla_wealth = price * TESLA_SHARES
+    total_wealth = tesla_wealth + SPACEX_VALUE + XAI_VALUE + X_VALUE
+    
+    return {
+        "price": price,
+        "tesla_shares": TESLA_SHARES,
+        "tesla": tesla_wealth,
+        "spaceX": SPACEX_VALUE,
+        "xAI": XAI_VALUE,
+        "x": X_VALUE,
+        "total": total_wealth,
+        "timestamp": datetime.now()
+    }
+
+# CSS moderne
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
 
-/* Reset et configurations globales */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* Masquer les éléments Streamlit non désirés */
 #MainMenu, footer, header[data-testid="stHeader"] {
     display: none;
 }
 
-/* Style principal */
 .dashboard {
     font-family: 'Inter', sans-serif;
     max-width: 1200px;
@@ -108,63 +147,43 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Constantes et fonctions de calcul identiques au code original
-TESLA_SHARES = 411_930_000
-SPACEX_VALUE = 147_000_000_000
-XAI_VALUE = 27_000_000_000
-X_VALUE = 19_000_000_000
-
-def format_money(amount):
-    return f"{amount:,.0f} $"
-
-# Reste des fonctions de calcul identiques...
-
-# Affichage avec le nouveau design
+# Calcul et affichage
 wealth = calculate_wealth()
 
 if wealth:
-    st.markdown("""
+    st.markdown(f"""
     <div class="dashboard">
         <div class="header">
             <h1 class="title">Fortune d'Elon Musk</h1>
         </div>
         
         <div class="wealth-display">
-            <div class="amount">{}</div>
+            <div class="amount">{format_money(wealth["total"])}</div>
         </div>
         
         <div class="details-grid">
             <div class="detail-card">
                 <div class="detail-title">Tesla</div>
-                <div class="detail-value">{}</div>
+                <div class="detail-value">{format_money(wealth["tesla"])}</div>
             </div>
             <div class="detail-card">
                 <div class="detail-title">SpaceX</div>
-                <div class="detail-value">{}</div>
+                <div class="detail-value">{format_money(wealth["spaceX"])}</div>
             </div>
             <div class="detail-card">
                 <div class="detail-title">xAI</div>
-                <div class="detail-value">{}</div>
+                <div class="detail-value">{format_money(wealth["xAI"])}</div>
             </div>
             <div class="detail-card">
                 <div class="detail-title">X (Twitter)</div>
-                <div class="detail-value">{}</div>
+                <div class="detail-value">{format_money(wealth["x"])}</div>
             </div>
         </div>
         
         <div class="timestamp">
-            Dernière mise à jour : {}
+            Dernière mise à jour : {wealth["timestamp"].strftime("%H:%M:%S")}
         </div>
     </div>
-    """.format(
-        format_money(wealth["total"]),
-        format_money(wealth["tesla"]),
-        format_money(wealth["spaceX"]),
-        format_money(wealth["xAI"]),
-        format_money(wealth["x"]),
-        wealth["timestamp"].strftime("%H:%M:%S")
-    ), unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 else:
     st.markdown('<div class="dashboard"><div class="wealth-display">Données indisponibles</div></div>', unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)  # Close content-wrapper
