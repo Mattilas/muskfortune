@@ -81,6 +81,7 @@ body {
   color: #333;
   margin-top: 0;
   box-shadow: none;
+  border: 1px solid #ccc; /* Added for visualization */
 }
 
 .details h2 {
@@ -132,10 +133,54 @@ div[data-testid="stAppViewContainer"] {
 # Wrapper for content
 st.markdown('<div class="content-wrapper">', unsafe_allow_html=True)
 
+# Constants
+TESLA_SHARES = 411_930_000
+SPACEX_VALUE = 147_000_000_000
+XAI_VALUE = 27_000_000_000
+X_VALUE = 19_000_000_000
+
+def format_money(amount):
+    return f"{amount:,.0f} $"
+
+def get_tesla_price():
+    ticker = yf.Ticker("TSLA")  # Corrected ticker symbol
+    hist = ticker.history(period="1d")
+    if not hist.empty and 'Close' in hist.columns:
+        return hist['Close'].iloc[-1]
+    return None
+
+def calculate_wealth():
+    price = get_tesla_price()
+    if price is None:
+        return None
+
+    tesla_wealth = price * TESLA_SHARES
+    total_wealth = tesla_wealth + SPACEX_VALUE + XAI_VALUE + X_VALUE
+
+    return {
+        "price": price,
+        "tesla_shares": TESLA_SHARES,
+        "tesla": tesla_wealth,
+        "spaceX": SPACEX_VALUE,
+        "xAI": XAI_VALUE,
+        "x": X_VALUE,
+        "total": total_wealth,
+        "timestamp": datetime.now()
+    }
+
+# Calculate wealth
+wealth = calculate_wealth()
+
+# Debug statement
+# st.write(wealth)
+
 # Title and amount wrapper
 st.markdown('<div class="title-amount-wrapper">', unsafe_allow_html=True)
 st.markdown('<h1 class="title">Fortune d\'Elon Musk en temps réel</h1>', unsafe_allow_html=True)
-st.markdown(f'<div class="amount update">{format_money(wealth["total"])}</div>', unsafe_allow_html=True)
+if wealth:
+    st.markdown(f'<div class="amount update">{format_money(wealth["total"])}</div>', unsafe_allow_html=True)
+else:
+    st.markdown('<div class="amount">Données indisponibles</div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
 # Details section
