@@ -46,6 +46,13 @@ body {
   padding: 0;
 }
 
+.title-amount-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
 .title {
   font-size: 28px;
   font-weight: 700;
@@ -58,12 +65,11 @@ body {
   font-size: 54px;
   font-weight: 900;
   color: #f5c40c;
-  padding: 10px 15px; /* Adjusted padding */
+  padding: 5px 15px;
   border-radius: 12px;
   background: transparent;
   margin: 0;
-  display: inline-block;
-  vertical-align: top;
+  display: block;
 }
 
 .details {
@@ -95,6 +101,11 @@ body {
   margin-top: 20px;
 }
 
+/* Override Streamlit's default padding */
+div[data-testid="stAppViewContainer"] {
+  padding: 0 !important;
+}
+
 /* Include padding and border in element's width */
 * {
   box-sizing: border-box;
@@ -112,7 +123,7 @@ body {
 
   .amount {
     font-size: 36px;
-    padding: 10px 15px;
+    padding: 5px 15px;
   }
 }
 </style>
@@ -121,54 +132,14 @@ body {
 # Wrapper for content
 st.markdown('<div class="content-wrapper">', unsafe_allow_html=True)
 
-# Page title
+# Title and amount wrapper
+st.markdown('<div class="title-amount-wrapper">', unsafe_allow_html=True)
 st.markdown('<h1 class="title">Fortune d\'Elon Musk en temps réel</h1>', unsafe_allow_html=True)
+st.markdown(f'<div class="amount update">{format_money(wealth["total"])}</div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-# Constants
-TESLA_SHARES = 411_930_000
-SPACEX_VALUE = 147_000_000_000
-XAI_VALUE = 27_000_000_000
-X_VALUE = 19_000_000_000
-
-def format_money(amount):
-    return f"{amount:,.0f} $"
-
-def get_tesla_price():
-    def attempt():
-        ticker = yf.Ticker("TSLA")
-        hist = ticker.history(period="1d")
-        if not hist.empty and 'Close' in hist.columns:
-            return hist['Close'].iloc[-1]
-        return None
-
-    price = attempt()
-    if price is None:
-        price = attempt()
-    return price
-
-def calculate_wealth():
-    price = get_tesla_price()
-    if price is None:
-        return None
-
-    tesla_wealth = price * TESLA_SHARES
-    total_wealth = tesla_wealth + SPACEX_VALUE + XAI_VALUE + X_VALUE
-
-    return {
-        "price": price,
-        "tesla_shares": TESLA_SHARES,
-        "tesla": tesla_wealth,
-        "spaceX": SPACEX_VALUE,
-        "xAI": XAI_VALUE,
-        "x": X_VALUE,
-        "total": total_wealth,
-        "timestamp": datetime.now()
-    }
-
-wealth = calculate_wealth()
-
+# Details section
 if wealth:
-    st.markdown(f'<div class="amount update">{format_money(wealth["total"])}</div>', unsafe_allow_html=True)
     st.markdown('<div class="details">', unsafe_allow_html=True)
     st.markdown('<h2>Détails du calcul</h2>', unsafe_allow_html=True)
     st.markdown(f'<p>Cours actuel de Tesla : {format_money(wealth["price"])} par action</p>', unsafe_allow_html=True)
