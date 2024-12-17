@@ -25,7 +25,7 @@ header[data-testid="stHeader"] {
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&display=swap');
 
 body {
-  background: #fff;
+  background: #080808;
   font-family: 'Space Grotesk', sans-serif;
   margin: 0;
   padding: 0;
