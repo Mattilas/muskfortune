@@ -165,17 +165,22 @@ wealth = calculate_wealth()
 
 if wealth:
     st.markdown(f'<div class="amount update">{format_money(wealth["total"])}</div>', unsafe_allow_html=True)
-    st.markdown('<div class="details">', unsafe_allow_html=True)
-    st.markdown('<h2>Détails du calcul</h2>', unsafe_allow_html=True)
-    st.markdown(f'<p>Cours actuel de Tesla : {format_money(wealth["price"])} par action</p>', unsafe_allow_html=True)
-    st.markdown(f'<p>Actions Tesla détenues : {wealth["tesla_shares"]:,}</p>', unsafe_allow_html=True)
-    st.markdown(f'<p>Valeur Tesla = {format_money(wealth["price"])} × {wealth["tesla_shares"]:,} = {format_money(wealth["tesla"])} </p>', unsafe_allow_html=True)
-    st.markdown(f'<p>SpaceX : {format_money(wealth["spaceX"])} </p>', unsafe_allow_html=True)
-    st.markdown(f'<p>xAI : {format_money(wealth["xAI"])} </p>', unsafe_allow_html=True)
-    st.markdown(f'<p>X (Twitter) : {format_money(wealth["x"])} </p>', unsafe_allow_html=True)
-    st.markdown(f'<p class="total">Total : {format_money(wealth["total"])}</p>', unsafe_allow_html=True)
-    st.markdown(f'<p style="margin-top:20px; color:#666;">Dernière mise à jour : {wealth["timestamp"].strftime("%H:%M:%S")}</p>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Consolidate the details section into a single HTML string
+    details_html = f"""
+    <div class="details">
+        <h2>Détails du calcul</h2>
+        <p>Cours actuel de Tesla : {format_money(wealth["price"])}</p>
+        <p>Actions Tesla détenues : {wealth["tesla_shares"]:,}</p>
+        <p>Valeur Tesla = {format_money(wealth["price"])} × {wealth["tesla_shares"]:,} = {format_money(wealth["tesla"])} </p>
+        <p>SpaceX : {format_money(wealth["spaceX"])} </p>
+        <p>xAI : {format_money(wealth["xAI"])} </p>
+        <p>X (Twitter) : {format_money(wealth["x"])} </p>
+        <p class="total">Total : {format_money(wealth["total"])}</p>
+        <p style="margin-top:20px; color:#666;">Dernière mise à jour : {wealth["timestamp"].strftime("%H:%M:%S")}</p>
+    </div>
+    """
+    st.markdown(details_html, unsafe_allow_html=True)
 else:
     st.markdown('<div class="amount">Données indisponibles</div>', unsafe_allow_html=True)
 
