@@ -3,25 +3,25 @@ import yfinance as yf
 from datetime import datetime
 from streamlit_autorefresh import st_autorefresh
 
-# Configuration de la page
+# Configure the page
 st.set_page_config(page_title="Elon Musk Real-Time Fortune", page_icon="💰", layout="centered")
 
-# Rafraîchissement automatique toutes les 10 secondes
+# Auto-refresh every 10 seconds
 st_autorefresh(interval=10_000, limit=None, key="wealth_refresh")
 
-# CSS modifié avec fond blanc
+# Updated CSS with white background and no extra space around the title
 st.markdown("""
 <style>
-/* Cacher le menu et le footer de Streamlit */
+/* Hide Streamlit's main menu and footer */
 #MainMenu, footer {
     visibility: hidden;
 }
-/* Masquer le header */
+/* Hide the header */
 header[data-testid="stHeader"] {
     display: none;
 }
 
-/* Import de la police */
+/* Import custom font */
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&display=swap');
 
 body {
@@ -30,7 +30,7 @@ body {
   margin: 0;
   padding: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Changed from center to flex-start */
   justify-content: center;
   min-height: 100vh;
 }
@@ -45,7 +45,7 @@ body {
   font-size: 28px;
   font-weight: 700;
   color: #333;
-  margin: 20px 0 10px; /* Adjusted margins */
+  margin: 0; /* Removed margins around the title */
 }
 
 .amount {
@@ -55,7 +55,7 @@ body {
   padding: 20px 30px;
   border-radius: 12px;
   background: #f8f8f8;
-  margin: 10px 0 0; /* Removed bottom margin */
+  margin: 10px 0 0; /* Adjusted margins as needed */
 }
 
 .amount.update {
@@ -74,7 +74,7 @@ body {
   font-size: 0.95rem;
   line-height: 1.5;
   color: #333;
-  margin-top: 20px; /* Added top margin for spacing */
+  margin-top: 20px; /* Spacing between amount and details */
   box-shadow: none;
 }
 
@@ -117,10 +117,10 @@ body {
 # Wrapper for content
 st.markdown('<div class="content-wrapper">', unsafe_allow_html=True)
 
-# Titre de la page
+# Page title
 st.markdown('<h1 class="title">Fortune d\'Elon Musk en temps réel</h1>', unsafe_allow_html=True)
 
-# Constantes
+# Constants
 TESLA_SHARES = 411_930_000
 SPACEX_VALUE = 147_000_000_000
 XAI_VALUE = 27_000_000_000
