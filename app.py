@@ -3,35 +3,38 @@ import yfinance as yf
 from datetime import datetime
 from streamlit_autorefresh import st_autorefresh
 
-# Configuration de la page
+# Configure the page
 st.set_page_config(page_title="Elon Musk Real-Time Fortune", page_icon="💰", layout="centered")
 
-# Rafraîchissement automatique toutes les 10 secondes
+# Auto-refresh every 10 seconds
 st_autorefresh(interval=10_000, limit=None, key="wealth_refresh")
 
-# CSS modifié avec fond blanc
+# Updated CSS with no white bar under the title
 st.markdown("""
 <style>
-/* Cacher le menu et le footer de Streamlit */
+/* Hide Streamlit's main menu and footer */
 #MainMenu, footer {
     visibility: hidden;
 }
-/* Masquer le header */
+/* Hide the header */
 header[data-testid="stHeader"] {
     display: none;
 }
 
-/* Import de la police */
+/* Import custom font */
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&display=swap');
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
 
 body {
   background: #fff;
   font-family: 'Space Grotesk', sans-serif;
-  margin: 0;
-  padding: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   min-height: 100vh;
 }
 
@@ -39,32 +42,28 @@ body {
   width: 90%;
   max-width: 700px;
   text-align: center;
+  margin: 0;
+  padding: 0;
 }
 
 .title {
   font-size: 28px;
   font-weight: 700;
   color: #333;
-  margin: 20px 0 10px; /* Adjusted margins */
+  margin: 0;
+  line-height: 1;
 }
 
 .amount {
   font-size: 54px;
   font-weight: 900;
   color: #f5c40c;
-  padding: 20px 30px;
+  padding: 10px 15px; /* Adjusted padding */
   border-radius: 12px;
-  background: #f8f8f8;
-  margin: 10px 0 0; /* Removed bottom margin */
-}
-
-.amount.update {
-  animation: update 0.5s ease-in-out;
-}
-
-@keyframes update {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.03); }
+  background: transparent;
+  margin: 0;
+  display: inline-block;
+  vertical-align: top;
 }
 
 .details {
@@ -74,7 +73,7 @@ body {
   font-size: 0.95rem;
   line-height: 1.5;
   color: #333;
-  margin-top: 20px; /* Added top margin for spacing */
+  margin-top: 0;
   box-shadow: none;
 }
 
@@ -96,6 +95,11 @@ body {
   margin-top: 20px;
 }
 
+/* Include padding and border in element's width */
+* {
+  box-sizing: border-box;
+}
+
 /* Remove margins from Streamlit markdown elements */
 .stMarkdown {
   margin: 0;
@@ -108,7 +112,7 @@ body {
 
   .amount {
     font-size: 36px;
-    padding: 15px 20px;
+    padding: 10px 15px;
   }
 }
 </style>
@@ -117,10 +121,10 @@ body {
 # Wrapper for content
 st.markdown('<div class="content-wrapper">', unsafe_allow_html=True)
 
-# Titre de la page
+# Page title
 st.markdown('<h1 class="title">Fortune d\'Elon Musk en temps réel</h1>', unsafe_allow_html=True)
 
-# Constantes
+# Constants
 TESLA_SHARES = 411_930_000
 SPACEX_VALUE = 147_000_000_000
 XAI_VALUE = 27_000_000_000
