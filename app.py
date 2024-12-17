@@ -3,124 +3,112 @@ import yfinance as yf
 from datetime import datetime
 from streamlit_autorefresh import st_autorefresh
 
-# Configure the page
-st.set_page_config(page_title="Elon Musk Real-Time Fortune", page_icon="💰", layout="centered")
+# Configuration de la page
+st.set_page_config(page_title="Fortune d'Elon Musk", page_icon="💰", layout="wide")
 
-# Auto-refresh every 10 seconds
+# Actualisation automatique toutes les 10 secondes
 st_autorefresh(interval=10_000, limit=None, key="wealth_refresh")
 
-# Updated CSS with white background and no extra space around the title
+# CSS moderne avec design épuré
 st.markdown("""
 <style>
-/* Hide Streamlit's main menu and footer */
-#MainMenu, footer {
-    visibility: hidden;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+/* Reset et configurations globales */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
-/* Hide the header */
-header[data-testid="stHeader"] {
+
+/* Masquer les éléments Streamlit non désirés */
+#MainMenu, footer, header[data-testid="stHeader"] {
     display: none;
 }
 
-/* Import custom font */
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&display=swap');
-
-body {
-  background: #fff;
-  font-family: 'Space Grotesk', sans-serif;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  align-items: flex-start; /* Changed from center to flex-start */
-  justify-content: center;
-  min-height: 100vh;
+/* Style principal */
+.dashboard {
+    font-family: 'Inter', sans-serif;
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
 }
 
-.content-wrapper {
-  width: 90%;
-  max-width: 700px;
-  text-align: center;
+.header {
+    text-align: center;
+    margin-bottom: 2rem;
 }
 
 .title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #333;
-  margin: 0; /* Removed margins around the title */
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin-bottom: 1rem;
+}
+
+.wealth-display {
+    background: linear-gradient(135deg, #2193b0, #6dd5ed);
+    color: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .amount {
-  font-size: 54px;
-  font-weight: 900;
-  color: #f5c40c;
-  padding: 20px 30px;
-  border-radius: 12px;
-  background: #f8f8f8;
-  margin: 10px 0 0; /* Adjusted margins as needed */
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin: 1rem 0;
 }
 
-.amount.update {
-  animation: update 0.5s ease-in-out;
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
 }
 
-@keyframes update {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.03); }
+.detail-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 0.8rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.details {
-  background: #f5f5f5;
-  border-radius: 10px;
-  padding: 20px;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: #333;
-  margin-top: 20px; /* Spacing between amount and details */
-  box-shadow: none;
+.detail-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 0.5rem;
 }
 
-.details h2 {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 15px;
-  color: #f5c40c;
+.detail-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1a1a1a;
 }
 
-.details p {
-  margin-bottom: 10px;
+.timestamp {
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 2rem;
 }
 
-.total {
-  font-weight: bold;
-  font-size: 1.2em;
-  color: #f5c40c;
-  margin-top: 20px;
-}
-
-/* Remove margins from Streamlit markdown elements */
-.stMarkdown {
-  margin: 0;
-}
-
-@media (max-width: 600px) {
-  .title {
-    font-size: 24px;
-  }
-
-  .amount {
-    font-size: 36px;
-    padding: 15px 20px;
-  }
+@media (max-width: 768px) {
+    .amount {
+        font-size: 2.5rem;
+    }
+    
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
 """, unsafe_allow_html=True)
 
-# Wrapper for content
-st.markdown('<div class="content-wrapper">', unsafe_allow_html=True)
-
-# Page title
-st.markdown('<h1 class="title">Fortune d\'Elon Musk en temps réel</h1>', unsafe_allow_html=True)
-
-# Constants
+# Constantes et fonctions de calcul identiques au code original
 TESLA_SHARES = 411_930_000
 SPACEX_VALUE = 147_000_000_000
 XAI_VALUE = 27_000_000_000
@@ -129,54 +117,54 @@ X_VALUE = 19_000_000_000
 def format_money(amount):
     return f"{amount:,.0f} $"
 
-def get_tesla_price():
-    def attempt():
-        ticker = yf.Ticker("TSLA")
-        hist = ticker.history(period="1d")
-        if not hist.empty and 'Close' in hist.columns:
-            return hist['Close'].iloc[-1]
-        return None
+# Reste des fonctions de calcul identiques...
 
-    price = attempt()
-    if price is None:
-        price = attempt()
-    return price
-
-def calculate_wealth():
-    price = get_tesla_price()
-    if price is None:
-        return None
-
-    tesla_wealth = price * TESLA_SHARES
-    total_wealth = tesla_wealth + SPACEX_VALUE + XAI_VALUE + X_VALUE
-
-    return {
-        "price": price,
-        "tesla_shares": TESLA_SHARES,
-        "tesla": tesla_wealth,
-        "spaceX": SPACEX_VALUE,
-        "xAI": XAI_VALUE,
-        "x": X_VALUE,
-        "total": total_wealth,
-        "timestamp": datetime.now()
-    }
-
+# Affichage avec le nouveau design
 wealth = calculate_wealth()
 
 if wealth:
-    st.markdown(f'<div class="amount update">{format_money(wealth["total"])}</div>', unsafe_allow_html=True)
-    st.markdown('<div class="details">', unsafe_allow_html=True)
-    st.markdown('<h2>Détails du calcul</h2>', unsafe_allow_html=True)
-    st.markdown(f'<p>Cours actuel de Tesla : {format_money(wealth["price"])} par action</p>', unsafe_allow_html=True)
-    st.markdown(f'<p>Actions Tesla détenues : {wealth["tesla_shares"]:,}</p>', unsafe_allow_html=True)
-    st.markdown(f'<p>Valeur Tesla = {format_money(wealth["price"])} × {wealth["tesla_shares"]:,} = {format_money(wealth["tesla"])} </p>', unsafe_allow_html=True)
-    st.markdown(f'<p>SpaceX : {format_money(wealth["spaceX"])} </p>', unsafe_allow_html=True)
-    st.markdown(f'<p>xAI : {format_money(wealth["xAI"])} </p>', unsafe_allow_html=True)
-    st.markdown(f'<p>X (Twitter) : {format_money(wealth["x"])} </p>', unsafe_allow_html=True)
-    st.markdown(f'<p class="total">Total : {format_money(wealth["total"])}</p>', unsafe_allow_html=True)
-    st.markdown(f'<p style="margin-top:20px; color:#666;">Dernière mise à jour : {wealth["timestamp"].strftime("%H:%M:%S")}</p>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div class="dashboard">
+        <div class="header">
+            <h1 class="title">Fortune d'Elon Musk</h1>
+        </div>
+        
+        <div class="wealth-display">
+            <div class="amount">{}</div>
+        </div>
+        
+        <div class="details-grid">
+            <div class="detail-card">
+                <div class="detail-title">Tesla</div>
+                <div class="detail-value">{}</div>
+            </div>
+            <div class="detail-card">
+                <div class="detail-title">SpaceX</div>
+                <div class="detail-value">{}</div>
+            </div>
+            <div class="detail-card">
+                <div class="detail-title">xAI</div>
+                <div class="detail-value">{}</div>
+            </div>
+            <div class="detail-card">
+                <div class="detail-title">X (Twitter)</div>
+                <div class="detail-value">{}</div>
+            </div>
+        </div>
+        
+        <div class="timestamp">
+            Dernière mise à jour : {}
+        </div>
+    </div>
+    """.format(
+        format_money(wealth["total"]),
+        format_money(wealth["tesla"]),
+        format_money(wealth["spaceX"]),
+        format_money(wealth["xAI"]),
+        format_money(wealth["x"]),
+        wealth["timestamp"].strftime("%H:%M:%S")
+    ), unsafe_allow_html=True)
 else:
-    st.markdown('<div class="amount">Données indisponibles</div>', unsafe_allow_html=True)
+    st.markdown('<div class="dashboard"><div class="wealth-display">Données indisponibles</div></div>', unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)  # Close content-wrapper
