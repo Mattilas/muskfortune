@@ -9,7 +9,7 @@ st.set_page_config(page_title="Fortune d'Elon Musk en temps réel", page_icon="�
 # Rafraîchissement automatique toutes les 10 secondes
 st_autorefresh(interval=10_000, limit=None, key="wealth_refresh")
 
-# CSS modifié avec fond blanc
+# CSS personnalisé
 st.markdown("""
 <style>
 /* Cacher le menu et le footer de Streamlit */
@@ -44,7 +44,7 @@ body {
 .title {
   font-size: 28px;
   font-weight: 700;
-  color: #333;
+  color: #f5c40c;
   margin: 20px 0 10px;
 }
 
@@ -54,7 +54,7 @@ body {
   color: #f5c40c;
   padding: 20px 30px;
   border-radius: 12px;
-  background: #f8f8f8;
+  background: #333;
   margin: 10px 0 0;
 }
 
@@ -68,12 +68,12 @@ body {
 }
 
 .details {
-  background: #f5f5f5;
+  background: #333;
   border-radius: 10px;
   padding: 20px;
   font-size: 0.95rem;
   line-height: 1.5;
-  color: #333;
+  color: #f5c40c;
   margin-top: 20px;
   box-shadow: none;
 }
@@ -113,7 +113,7 @@ body {
 </style>
 """, unsafe_allow_html=True)
 
-# Wrapper for content
+# Wrapper pour le contenu
 st.markdown('<div class="content-wrapper">', unsafe_allow_html=True)
 
 # Titre de la page
@@ -190,6 +190,5 @@ def calculate_wealth():
         "x": x_wealth,
         "boring": boring_wealth,
         "neuralink": neuralink_wealth,
-        "total": total_wealth,
-
+        "total":
 ::contentReference[oaicite:0]{index=0}
