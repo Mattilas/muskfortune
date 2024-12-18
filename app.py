@@ -4,12 +4,12 @@ from datetime import datetime
 from streamlit_autorefresh import st_autorefresh
 
 # Configuration de la page
-st.set_page_config(page_title="Fortune d'Elon Musk en temps réel", page_icon="💰", layout="centered")
+st.set_page_config(page_title="Elon Musk Real-Time Fortune", page_icon="💰", layout="centered")
 
 # Rafraîchissement automatique toutes les 10 secondes
 st_autorefresh(interval=10_000, limit=None, key="wealth_refresh")
 
-# CSS personnalisé
+# CSS modifié avec fond blanc
 st.markdown("""
 <style>
 /* Cacher le menu et le footer de Streamlit */
@@ -44,7 +44,7 @@ body {
 .title {
   font-size: 28px;
   font-weight: 700;
-  color: #f5c40c;
+  color: #333;
   margin: 20px 0 10px;
 }
 
@@ -54,7 +54,7 @@ body {
   color: #f5c40c;
   padding: 20px 30px;
   border-radius: 12px;
-  background: #333;
+  background: #f8f8f8;
   margin: 10px 0 0;
 }
 
@@ -68,12 +68,12 @@ body {
 }
 
 .details {
-  background: #333;
+  background: #f5f5f5;
   border-radius: 10px;
   padding: 20px;
   font-size: 0.95rem;
   line-height: 1.5;
-  color: #f5c40c;
+  color: #333;
   margin-top: 20px;
   box-shadow: none;
 }
@@ -113,7 +113,7 @@ body {
 </style>
 """, unsafe_allow_html=True)
 
-# Wrapper pour le contenu
+# Wrapper for content
 st.markdown('<div class="content-wrapper">', unsafe_allow_html=True)
 
 # Titre de la page
@@ -190,5 +190,34 @@ def calculate_wealth():
         "x": x_wealth,
         "boring": boring_wealth,
         "neuralink": neuralink_wealth,
-        "total":
-::contentReference[oaicite:0]{index=0}
+        "total": total_wealth,
+        "timestamp": datetime.now()
+    }
+
+wealth = calculate_wealth()
+
+if wealth:
+    st.markdown(f'<div class="amount update">{format_money(wealth["total"])}</div>', unsafe_allow_html=True)
+    
+    details_html = f"""
+    <div class="details">
+        <h2>Détails du calcul</h2>
+        <p>Cours actuel de Tesla : {format_money(wealth["price"])}</p>
+        <p>Actions Tesla détenues : {wealth["tesla_owned"]:,.0f} ({TESLA_SHARES_PERCENTAGE*100:.1f}%)</p>
+        <p>Options Tesla : {wealth["tesla_options"]:,.0f} ({TESLA_OPTIONS_PERCENTAGE*100:.1f}%)</p>
+        <p>Valeur Tesla totale : {format_money(wealth["tesla"])} *</p>
+        <p>SpaceX ({SPACEX_SHARES*100}%) : {format_money(wealth["spaceX"])}</p>
+        <p>xAI ({XAI_SHARES*100}%) : {format_money(wealth["xAI"])}</p>
+        <p>X ({X_SHARES*100}%) : {format_money(wealth["x"])}</p>
+        <p>The Boring Company ({BORING_COMPANY_SHARES*100}%) : {format_money(wealth["boring"])}</p>
+        <p>Neuralink ({NEURALINK_SHARES*100}%) : {format_money(wealth["neuralink"])}</p>
+        <p class="total">Total : {format_money(wealth["total"])}</p>
+        <p style="font-size:0.8em; color:#666;">* Après déduction des prêts personnels de {format_money(TESLA_PERSONAL_LOANS)}</p>
+        <p style="margin-top:20px; color:#666;">Dernière mise à jour : {wealth["timestamp"].strftime("%H:%M:%S")}</p>
+    </div>
+    """
+    st.markdown(details_html, unsafe_allow_html=True)
+else:
+    st.markdown('<div class="amount">Données indisponibles</div>', unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)  # Close content-wrapper
