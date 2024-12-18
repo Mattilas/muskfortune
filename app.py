@@ -163,8 +163,8 @@ def calculate_wealth():
     if price is None:
         return None
     
-    # Calcul de la valeur Tesla
-    tesla_shares = yf.Ticker("TSLA").info["sharesOutstanding"]
+    # Nombre d'actions Tesla (Shares Outstanding) à jour
+    tesla_shares = 3_210_000_000  # 3.21B actions au 18 décembre 2024
     tesla_owned_shares = tesla_shares * TESLA_SHARES_PERCENTAGE
     tesla_options_shares = tesla_shares * TESLA_OPTIONS_PERCENTAGE
     tesla_total_shares = tesla_owned_shares + tesla_options_shares
@@ -182,6 +182,8 @@ def calculate_wealth():
     return {
         "price": price,
         "tesla_shares": tesla_total_shares,
+        "tesla_owned": tesla_owned_shares,
+        "tesla_options": tesla_options_shares,
         "tesla": tesla_wealth,
         "spaceX": spacex_wealth,
         "xAI": xai_wealth,
@@ -201,7 +203,9 @@ if wealth:
     <div class="details">
         <h2>Détails du calcul</h2>
         <p>Cours actuel de Tesla : {format_money(wealth["price"])}</p>
-        <p>Tesla ({(TESLA_SHARES_PERCENTAGE + TESLA_OPTIONS_PERCENTAGE)*100:.1f}% + options) : {format_money(wealth["tesla"])} *</p>
+        <p>Actions Tesla détenues : {wealth["tesla_owned"]:,.0f} ({TESLA_SHARES_PERCENTAGE*100:.1f}%)</p>
+        <p>Options Tesla : {wealth["tesla_options"]:,.0f} ({TESLA_OPTIONS_PERCENTAGE*100:.1f}%)</p>
+        <p>Valeur Tesla totale : {format_money(wealth["tesla"])} *</p>
         <p>SpaceX ({SPACEX_SHARES*100}%) : {format_money(wealth["spaceX"])}</p>
         <p>xAI ({XAI_SHARES*100}%) : {format_money(wealth["xAI"])}</p>
         <p>X ({X_SHARES*100}%) : {format_money(wealth["x"])}</p>
