@@ -120,27 +120,27 @@ st.markdown('<div class="content-wrapper">', unsafe_allow_html=True)
 st.markdown('<h1 class="title">Fortune d\'Elon Musk en temps réel</h1>', unsafe_allow_html=True)
 
 # Constantes pour les actions Tesla
-TESLA_SHARES_PERCENTAGE = 0.13  # 13% des actions
-TESLA_OPTIONS_PERCENTAGE = 0.045  # 4.5% (options)
-TESLA_PERSONAL_LOANS = 3_500_000_000  # Prêts personnels
+TESLA_SHARES_PERCENTAGE = 0.13  # 13% des actions (confirmed Jan 2025):cite[1]:cite[6]
+TESLA_OPTIONS_PERCENTAGE = 0.045  # 4.5% (options - disputed but maintained):cite[1]
+TESLA_PERSONAL_LOANS = 3_500_000_000  # Prêts personnels (confirmed):cite[7]
 
-# Valeurs totales des entreprises et pourcentages détenus
-SPACEX_VALUE = 350_000_000_000  # Valeur en décembre 2024
-SPACEX_SHARES = 0.42  # 42% des actions
+# Valeurs totales des entreprises et pourcentages détenus (Jan 2025)
+SPACEX_VALUE = 350_000_000_000  # Valorisation décembre 2024:cite[1]:cite[7]
+SPACEX_SHARES = 0.42  # 42% des actions:cite[1]:cite[6]
 
 X_INITIAL_VALUE = 44_000_000_000  # Valeur initiale
-X_DEVALUATION = 0.70  # Dévaluation de 70%
+X_DEVALUATION = 0.72  # Dévaluation de 72% (Oct 2024):cite[7]
 X_VALUE = X_INITIAL_VALUE * (1 - X_DEVALUATION)
-X_SHARES = 0.79  # 79% des actions
+X_SHARES = 0.79  # 79% des actions:cite[6]
 
-XAI_VALUE = 50_000_000_000  # Valeur en décembre 2024
-XAI_SHARES = 0.54  # 54% des actions
+XAI_VALUE = 50_000_000_000  # Valorisation décembre 2024:cite[1]:cite[3]
+XAI_SHARES = 0.54  # 54% des actions:cite[1]:cite[6]
 
-BORING_COMPANY_VALUE = 7_000_000_000  # Valeur en décembre 2024
-BORING_COMPANY_SHARES = 0.90  # 90% des actions
+BORING_COMPANY_VALUE = 7_000_000_000  # Valorisation décembre 2024 (maintenue)
+BORING_COMPANY_SHARES = 0.90  # 90% des actions:cite[6]
 
-NEURALINK_VALUE = 8_000_000_000  # Valeur en juillet 2024
-NEURALINK_SHARES = 0.90  # 90% des actions
+NEURALINK_VALUE = 8_000_000_000  # Valorisation juillet 2024 (maintenue)
+NEURALINK_SHARES = 0.90  # 90% des actions:cite[6]
 
 def format_money(amount):
     return f"{amount:,.0f} $"
