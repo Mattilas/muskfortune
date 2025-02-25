@@ -13,10 +13,7 @@ st.markdown("""
 /* Cacher le menu, le footer et le header */
 #MainMenu, footer { visibility: hidden; }
 header[data-testid="stHeader"] { display: none; }
-
-/* Import de la police */
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&display=swap');
-
 body {
   background: #080808;
   font-family: 'Space Grotesk', sans-serif;
@@ -24,36 +21,29 @@ body {
   display: flex; align-items: center; justify-content: center;
   min-height: 100vh;
 }
-
 .content-wrapper {
   width: 90%; max-width: 700px; text-align: center;
 }
-
 .title {
   font-size: 28px; font-weight: 700; color: #333;
   margin: 20px 0 10px;
 }
-
 .amount {
   font-size: 54px; font-weight: 900; color: #f5c40c;
   padding: 20px 30px; border-radius: 12px;
   background: #f8f8f8; margin: 10px 0 0;
 }
-
 .amount.update { animation: update 0.5s ease-in-out; }
 @keyframes update { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
-
 .details {
   background: #f5f5f5; border-radius: 10px; padding: 20px;
   font-size: 0.95rem; line-height: 1.5; color: #333;
   margin-top: 20px; box-shadow: none;
 }
-
 .details h2 { font-size: 20px; font-weight: 700; margin-bottom: 15px; color: #f5c40c; }
 .details p { margin-bottom: 10px; }
 .total { font-weight: bold; font-size: 1.2em; color: #f5c40c; margin-top: 20px; }
 .stMarkdown { margin: 0; }
-
 @media (max-width: 600px) {
   .title { font-size: 24px; }
   .amount { font-size: 36px; padding: 15px 20px; }
@@ -90,8 +80,8 @@ NEURALINK_SHARES = 0.90
 def format_money(amount):
     return f"{amount:,.0f} $"
 
-# Utilisation du cache pour limiter les requêtes à yfinance (TTL = 60 secondes)
-@st.cache_data(ttl=60)
+# Utilisation de st.experimental_singleton pour éviter de re-créer le Ticker trop souvent
+@st.experimental_singleton(ttl=60)
 def get_ticker():
     return yf.Ticker("TSLA")
 
@@ -104,7 +94,7 @@ def get_tesla_price():
     except Exception as e:
         st.error(f"Erreur via fast_info : {e}")
 
-    # Si la méthode précédente échoue, utiliser l'historique intraday
+    # Fallback sur l'historique intraday en cas d'échec
     if price is None:
         try:
             hist = ticker.history(period="1d", interval="1m")
