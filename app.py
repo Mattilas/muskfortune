@@ -7,17 +7,12 @@ from streamlit_autorefresh import st_autorefresh
 st.set_page_config(page_title="Elon Musk Real-Time Fortune", page_icon="💰", layout="centered")
 st_autorefresh(interval=10_000, limit=None, key="wealth_refresh")
 
-# CSS personnalisé
+# CSS personnalisé (identique à votre version)
 st.markdown("""
 <style>
-/* Cacher le menu et le footer de Streamlit */
-#MainMenu, footer {
-    visibility: hidden;
-}
-/* Masquer le header */
-header[data-testid="stHeader"] {
-    display: none;
-}
+/* Cacher le menu, le footer et le header */
+#MainMenu, footer { visibility: hidden; }
+header[data-testid="stHeader"] { display: none; }
 
 /* Import de la police */
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&display=swap');
@@ -25,88 +20,43 @@ header[data-testid="stHeader"] {
 body {
   background: #080808;
   font-family: 'Space Grotesk', sans-serif;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin: 0; padding: 0;
+  display: flex; align-items: center; justify-content: center;
   min-height: 100vh;
 }
 
 .content-wrapper {
-  width: 90%;
-  max-width: 700px;
-  text-align: center;
+  width: 90%; max-width: 700px; text-align: center;
 }
 
 .title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #333;
+  font-size: 28px; font-weight: 700; color: #333;
   margin: 20px 0 10px;
 }
 
 .amount {
-  font-size: 54px;
-  font-weight: 900;
-  color: #f5c40c;
-  padding: 20px 30px;
-  border-radius: 12px;
-  background: #f8f8f8;
-  margin: 10px 0 0;
+  font-size: 54px; font-weight: 900; color: #f5c40c;
+  padding: 20px 30px; border-radius: 12px;
+  background: #f8f8f8; margin: 10px 0 0;
 }
 
-.amount.update {
-  animation: update 0.5s ease-in-out;
-}
-
-@keyframes update {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.03); }
-}
+.amount.update { animation: update 0.5s ease-in-out; }
+@keyframes update { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
 
 .details {
-  background: #f5f5f5;
-  border-radius: 10px;
-  padding: 20px;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: #333;
-  margin-top: 20px;
-  box-shadow: none;
+  background: #f5f5f5; border-radius: 10px; padding: 20px;
+  font-size: 0.95rem; line-height: 1.5; color: #333;
+  margin-top: 20px; box-shadow: none;
 }
 
-.details h2 {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 15px;
-  color: #f5c40c;
-}
-
-.details p {
-  margin-bottom: 10px;
-}
-
-.total {
-  font-weight: bold;
-  font-size: 1.2em;
-  color: #f5c40c;
-  margin-top: 20px;
-}
-
-.stMarkdown {
-  margin: 0;
-}
+.details h2 { font-size: 20px; font-weight: 700; margin-bottom: 15px; color: #f5c40c; }
+.details p { margin-bottom: 10px; }
+.total { font-weight: bold; font-size: 1.2em; color: #f5c40c; margin-top: 20px; }
+.stMarkdown { margin: 0; }
 
 @media (max-width: 600px) {
-  .title {
-    font-size: 24px;
-  }
-
-  .amount {
-    font-size: 36px;
-    padding: 15px 20px;
-  }
+  .title { font-size: 24px; }
+  .amount { font-size: 36px; padding: 15px 20px; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -116,8 +66,8 @@ st.markdown('<div class="content-wrapper">', unsafe_allow_html=True)
 st.markdown('<h1 class="title">Fortune d\'Elon Musk en temps réel</h1>', unsafe_allow_html=True)
 
 # Constantes
-TESLA_SHARES_PERCENTAGE = 0.13  # 13%
-TESLA_OPTIONS_PERCENTAGE = 0.045  # 4.5%
+TESLA_SHARES_PERCENTAGE = 0.13     # 13%
+TESLA_OPTIONS_PERCENTAGE = 0.045     # 4.5%
 TESLA_PERSONAL_LOANS = 3_500_000_000
 
 SPACEX_VALUE = 350_000_000_000
@@ -140,24 +90,28 @@ NEURALINK_SHARES = 0.90
 def format_money(amount):
     return f"{amount:,.0f} $"
 
+# Utilisation du cache pour limiter les requêtes à yfinance (TTL = 60 secondes)
+@st.cache_data(ttl=60)
+def get_ticker():
+    return yf.Ticker("TSLA")
+
 def get_tesla_price():
-    ticker = yf.Ticker("TSLA")
+    ticker = get_ticker()
     price = None
     try:
-        # Tentative 1 : utilisation de regularMarketPrice depuis info
-        info = ticker.info
-        price = info.get("regularMarketPrice")
+        # Utilisation de fast_info pour une récupération plus légère
+        price = ticker.fast_info.get("lastPrice")
     except Exception as e:
-        st.error(f"Erreur lors de la récupération via info : {e}")
+        st.error(f"Erreur via fast_info : {e}")
 
-    # Si la première méthode n'a pas renvoyé de valeur, utiliser l'historique intraday
+    # Si la méthode précédente échoue, utiliser l'historique intraday
     if price is None:
         try:
             hist = ticker.history(period="1d", interval="1m")
             if not hist.empty and "Close" in hist.columns:
                 price = hist["Close"].iloc[-1]
         except Exception as e:
-            st.error(f"Erreur lors de la récupération via l'historique : {e}")
+            st.error(f"Erreur via l'historique : {e}")
     return price
 
 def calculate_wealth():
@@ -165,7 +119,6 @@ def calculate_wealth():
     if price is None:
         return None
 
-    # Nombre d'actions Tesla total
     tesla_shares = 3_210_000_000  # 3.21B actions
     tesla_owned_shares = tesla_shares * TESLA_SHARES_PERCENTAGE
     tesla_options_shares = tesla_shares * TESLA_OPTIONS_PERCENTAGE
