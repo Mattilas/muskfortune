@@ -5,11 +5,9 @@ from streamlit_autorefresh import st_autorefresh
 
 # Configuration de la page
 st.set_page_config(page_title="Elon Musk Real-Time Fortune", page_icon="💰", layout="centered")
-
-# Rafraîchissement automatique toutes les 10 secondes
 st_autorefresh(interval=10_000, limit=None, key="wealth_refresh")
 
-# CSS modifié avec fond blanc
+# CSS personnalisé
 st.markdown("""
 <style>
 /* Cacher le menu et le footer de Streamlit */
@@ -113,71 +111,75 @@ body {
 </style>
 """, unsafe_allow_html=True)
 
-# Wrapper for content
+# Wrapper pour le contenu
 st.markdown('<div class="content-wrapper">', unsafe_allow_html=True)
-
-# Titre de la page
 st.markdown('<h1 class="title">Fortune d\'Elon Musk en temps réel</h1>', unsafe_allow_html=True)
 
-# Constantes pour les actions Tesla
-TESLA_SHARES_PERCENTAGE = 0.13  # 13% des actions (confirmed Jan 2025):cite[1]:cite[6]
-TESLA_OPTIONS_PERCENTAGE = 0.045  # 4.5% (options - disputed but maintained):cite[1]
-TESLA_PERSONAL_LOANS = 3_500_000_000  # Prêts personnels (confirmed):cite[7]
+# Constantes
+TESLA_SHARES_PERCENTAGE = 0.13  # 13%
+TESLA_OPTIONS_PERCENTAGE = 0.045  # 4.5%
+TESLA_PERSONAL_LOANS = 3_500_000_000
 
-# Valeurs totales des entreprises et pourcentages détenus (Jan 2025)
-SPACEX_VALUE = 350_000_000_000  # Valorisation décembre 2024:cite[1]:cite[7]
-SPACEX_SHARES = 0.42  # 42% des actions:cite[1]:cite[6]
+SPACEX_VALUE = 350_000_000_000
+SPACEX_SHARES = 0.42
 
-X_INITIAL_VALUE = 44_000_000_000  # Valeur initiale
-X_DEVALUATION = 0.72  # Dévaluation de 72% (Oct 2024):cite[7]
+X_INITIAL_VALUE = 44_000_000_000
+X_DEVALUATION = 0.72
 X_VALUE = X_INITIAL_VALUE * (1 - X_DEVALUATION)
-X_SHARES = 0.79  # 79% des actions:cite[6]
+X_SHARES = 0.79
 
-XAI_VALUE = 50_000_000_000  # Valorisation décembre 2024:cite[1]:cite[3]
-XAI_SHARES = 0.54  # 54% des actions:cite[1]:cite[6]
+XAI_VALUE = 50_000_000_000
+XAI_SHARES = 0.54
 
-BORING_COMPANY_VALUE = 7_000_000_000  # Valorisation décembre 2024 (maintenue)
-BORING_COMPANY_SHARES = 0.90  # 90% des actions:cite[6]
+BORING_COMPANY_VALUE = 7_000_000_000
+BORING_COMPANY_SHARES = 0.90
 
-NEURALINK_VALUE = 8_000_000_000  # Valorisation juillet 2024 (maintenue)
-NEURALINK_SHARES = 0.90  # 90% des actions:cite[6]
+NEURALINK_VALUE = 8_000_000_000
+NEURALINK_SHARES = 0.90
 
 def format_money(amount):
     return f"{amount:,.0f} $"
 
 def get_tesla_price():
-    def attempt():
-        ticker = yf.Ticker("TSLA")
-        hist = ticker.history(period="1d")
-        if not hist.empty and 'Close' in hist.columns:
-            return hist['Close'].iloc[-1]
-        return None
+    ticker = yf.Ticker("TSLA")
+    price = None
+    try:
+        # Tentative 1 : utilisation de regularMarketPrice depuis info
+        info = ticker.info
+        price = info.get("regularMarketPrice")
+    except Exception as e:
+        st.error(f"Erreur lors de la récupération via info : {e}")
 
-    price = attempt()
+    # Si la première méthode n'a pas renvoyé de valeur, utiliser l'historique intraday
     if price is None:
-        price = attempt()
+        try:
+            hist = ticker.history(period="1d", interval="1m")
+            if not hist.empty and "Close" in hist.columns:
+                price = hist["Close"].iloc[-1]
+        except Exception as e:
+            st.error(f"Erreur lors de la récupération via l'historique : {e}")
     return price
 
 def calculate_wealth():
     price = get_tesla_price()
     if price is None:
         return None
-    
-    # Nombre d'actions Tesla (Shares Outstanding) à jour
-    tesla_shares = 3_210_000_000  # 3.21B actions au 18 décembre 2024
+
+    # Nombre d'actions Tesla total
+    tesla_shares = 3_210_000_000  # 3.21B actions
     tesla_owned_shares = tesla_shares * TESLA_SHARES_PERCENTAGE
     tesla_options_shares = tesla_shares * TESLA_OPTIONS_PERCENTAGE
     tesla_total_shares = tesla_owned_shares + tesla_options_shares
     tesla_wealth = (price * tesla_total_shares) - TESLA_PERSONAL_LOANS
-    
+
     spacex_wealth = SPACEX_VALUE * SPACEX_SHARES
     xai_wealth = XAI_VALUE * XAI_SHARES
     x_wealth = X_VALUE * X_SHARES
     boring_wealth = BORING_COMPANY_VALUE * BORING_COMPANY_SHARES
     neuralink_wealth = NEURALINK_VALUE * NEURALINK_SHARES
-    
-    total_wealth = (tesla_wealth + spacex_wealth + xai_wealth + 
-                   x_wealth + boring_wealth + neuralink_wealth)
+
+    total_wealth = (tesla_wealth + spacex_wealth + xai_wealth +
+                    x_wealth + boring_wealth + neuralink_wealth)
 
     return {
         "price": price,
@@ -198,7 +200,6 @@ wealth = calculate_wealth()
 
 if wealth:
     st.markdown(f'<div class="amount update">{format_money(wealth["total"])}</div>', unsafe_allow_html=True)
-    
     details_html = f"""
     <div class="details">
         <h2>Détails du calcul</h2>
@@ -220,4 +221,4 @@ if wealth:
 else:
     st.markdown('<div class="amount">Données indisponibles</div>', unsafe_allow_html=True)
 
-st.markdown('</div>', unsafe_allow_html=True)  # Close content-wrapper
+st.markdown('</div>', unsafe_allow_html=True)
