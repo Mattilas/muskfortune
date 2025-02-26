@@ -1,5 +1,6 @@
 import streamlit as st
-import yfinance as yf
+import requests
+from bs4 import BeautifulSoup
 from datetime import datetime
 from streamlit_autorefresh import st_autorefresh
 
@@ -9,7 +10,7 @@ st.set_page_config(page_title="Elon Musk Real-Time Fortune", page_icon="💰", l
 # Rafraîchissement automatique toutes les 10 secondes
 st_autorefresh(interval=10_000, limit=None, key="wealth_refresh")
 
-# CSS modifié avec fond blanc
+# CSS personnalisé (inspiré du FICHIER 2)
 st.markdown("""
 <style>
 /* Cacher le menu et le footer de Streamlit */
@@ -113,71 +114,75 @@ body {
 </style>
 """, unsafe_allow_html=True)
 
-# Wrapper for content
+# Wrapper pour le contenu
 st.markdown('<div class="content-wrapper">', unsafe_allow_html=True)
 
 # Titre de la page
 st.markdown('<h1 class="title">Fortune d\'Elon Musk en temps réel</h1>', unsafe_allow_html=True)
 
-# Constantes pour les actions Tesla
-TESLA_SHARES_PERCENTAGE = 0.13  # 13% des actions (confirmed Jan 2025):cite[1]:cite[6]
-TESLA_OPTIONS_PERCENTAGE = 0.045  # 4.5% (options - disputed but maintained):cite[1]
-TESLA_PERSONAL_LOANS = 3_500_000_000  # Prêts personnels (confirmed):cite[7]
+# --- Constantes ---
+TESLA_SHARES_PERCENTAGE = 0.13      # 13% des actions détenues
+TESLA_OPTIONS_PERCENTAGE = 0.045      # 4.5% des options
+TESLA_PERSONAL_LOANS = 3_500_000_000  # Prêts personnels
 
-# Valeurs totales des entreprises et pourcentages détenus (Jan 2025)
-SPACEX_VALUE = 350_000_000_000  # Valorisation décembre 2024:cite[1]:cite[7]
-SPACEX_SHARES = 0.42  # 42% des actions:cite[1]:cite[6]
+SPACEX_VALUE = 350_000_000_000
+SPACEX_SHARES = 0.42
 
-X_INITIAL_VALUE = 44_000_000_000  # Valeur initiale
-X_DEVALUATION = 0.72  # Dévaluation de 72% (Oct 2024):cite[7]
+X_INITIAL_VALUE = 44_000_000_000
+X_DEVALUATION = 0.72
 X_VALUE = X_INITIAL_VALUE * (1 - X_DEVALUATION)
-X_SHARES = 0.79  # 79% des actions:cite[6]
+X_SHARES = 0.79
 
-XAI_VALUE = 50_000_000_000  # Valorisation décembre 2024:cite[1]:cite[3]
-XAI_SHARES = 0.54  # 54% des actions:cite[1]:cite[6]
+XAI_VALUE = 50_000_000_000
+XAI_SHARES = 0.54
 
-BORING_COMPANY_VALUE = 7_000_000_000  # Valorisation décembre 2024 (maintenue)
-BORING_COMPANY_SHARES = 0.90  # 90% des actions:cite[6]
+BORING_COMPANY_VALUE = 7_000_000_000
+BORING_COMPANY_SHARES = 0.90
 
-NEURALINK_VALUE = 8_000_000_000  # Valorisation juillet 2024 (maintenue)
-NEURALINK_SHARES = 0.90  # 90% des actions:cite[6]
+NEURALINK_VALUE = 8_000_000_000
+NEURALINK_SHARES = 0.90
 
+# --- Fonctions utilitaires ---
 def format_money(amount):
     return f"{amount:,.0f} $"
 
+# Récupération du prix de Tesla via Yahoo Finance
+@st.cache_data(ttl=60)
 def get_tesla_price():
-    def attempt():
-        ticker = yf.Ticker("TSLA")
-        hist = ticker.history(period="1d")
-        if not hist.empty and 'Close' in hist.columns:
-            return hist['Close'].iloc[-1]
-        return None
+    try:
+        url = "https://finance.yahoo.com/quote/TSLA/"
+        headers = {"User-Agent": "Mozilla/5.0"}
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
+        price_span = soup.find('fin-streamer', {'data-symbol': 'TSLA', 'data-field': 'regularMarketPrice'})
+        if price_span:
+            return float(price_span.text.replace(',', ''))
+    except Exception as e:
+        st.error(f"Erreur lors de la récupération du prix de l'action Tesla : {e}")
+    return None
 
-    price = attempt()
-    if price is None:
-        price = attempt()
-    return price
-
+# Calcul de la fortune détaillée
 def calculate_wealth():
     price = get_tesla_price()
     if price is None:
         return None
     
-    # Nombre d'actions Tesla (Shares Outstanding) à jour
-    tesla_shares = 3_210_000_000  # 3.21B actions au 18 décembre 2024
+    # Nombre total d'actions Tesla (données actualisées)
+    tesla_shares = 3_210_000_000  # 3.21 milliards d'actions
     tesla_owned_shares = tesla_shares * TESLA_SHARES_PERCENTAGE
     tesla_options_shares = tesla_shares * TESLA_OPTIONS_PERCENTAGE
     tesla_total_shares = tesla_owned_shares + tesla_options_shares
     tesla_wealth = (price * tesla_total_shares) - TESLA_PERSONAL_LOANS
-    
+
     spacex_wealth = SPACEX_VALUE * SPACEX_SHARES
     xai_wealth = XAI_VALUE * XAI_SHARES
     x_wealth = X_VALUE * X_SHARES
     boring_wealth = BORING_COMPANY_VALUE * BORING_COMPANY_SHARES
     neuralink_wealth = NEURALINK_VALUE * NEURALINK_SHARES
-    
-    total_wealth = (tesla_wealth + spacex_wealth + xai_wealth + 
-                   x_wealth + boring_wealth + neuralink_wealth)
+
+    total_wealth = (tesla_wealth + spacex_wealth + xai_wealth +
+                    x_wealth + boring_wealth + neuralink_wealth)
 
     return {
         "price": price,
@@ -206,11 +211,11 @@ if wealth:
         <p>Actions Tesla détenues : {wealth["tesla_owned"]:,.0f} ({TESLA_SHARES_PERCENTAGE*100:.1f}%)</p>
         <p>Options Tesla : {wealth["tesla_options"]:,.0f} ({TESLA_OPTIONS_PERCENTAGE*100:.1f}%)</p>
         <p>Valeur Tesla totale : {format_money(wealth["tesla"])} *</p>
-        <p>SpaceX ({SPACEX_SHARES*100}%) : {format_money(wealth["spaceX"])}</p>
-        <p>xAI ({XAI_SHARES*100}%) : {format_money(wealth["xAI"])}</p>
-        <p>X ({X_SHARES*100}%) : {format_money(wealth["x"])}</p>
-        <p>The Boring Company ({BORING_COMPANY_SHARES*100}%) : {format_money(wealth["boring"])}</p>
-        <p>Neuralink ({NEURALINK_SHARES*100}%) : {format_money(wealth["neuralink"])}</p>
+        <p>SpaceX ({SPACEX_SHARES*100:.0f}%) : {format_money(wealth["spaceX"])}</p>
+        <p>xAI ({XAI_SHARES*100:.0f}%) : {format_money(wealth["xAI"])}</p>
+        <p>X ({X_SHARES*100:.0f}%) : {format_money(wealth["x"])}</p>
+        <p>The Boring Company ({BORING_COMPANY_SHARES*100:.0f}%) : {format_money(wealth["boring"])}</p>
+        <p>Neuralink ({NEURALINK_SHARES*100:.0f}%) : {format_money(wealth["neuralink"])}</p>
         <p class="total">Total : {format_money(wealth["total"])}</p>
         <p style="font-size:0.8em; color:#666;">* Après déduction des prêts personnels de {format_money(TESLA_PERSONAL_LOANS)}</p>
         <p style="margin-top:20px; color:#666;">Dernière mise à jour : {wealth["timestamp"].strftime("%H:%M:%S")}</p>
@@ -220,4 +225,4 @@ if wealth:
 else:
     st.markdown('<div class="amount">Données indisponibles</div>', unsafe_allow_html=True)
 
-st.markdown('</div>', unsafe_allow_html=True)  # Close content-wrapper
+st.markdown('</div>', unsafe_allow_html=True)

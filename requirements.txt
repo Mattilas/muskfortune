@@ -1,3 +1,5 @@
 yfinance==0.2.31b2
 streamlit-autorefresh==1.0.1
 streamlit>=0.75
+beautifulsoup4
+requests
