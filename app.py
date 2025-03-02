@@ -1,6 +1,5 @@
 import streamlit as st
 import requests
-from bs4 import BeautifulSoup
 from datetime import datetime
 from streamlit_autorefresh import st_autorefresh
 
@@ -10,7 +9,7 @@ st.set_page_config(page_title="Elon Musk Real-Time Fortune", page_icon="💰", l
 # Rafraîchissement automatique toutes les 10 secondes
 st_autorefresh(interval=10_000, limit=None, key="wealth_refresh")
 
-# CSS personnalisé (inspiré du FICHIER 2)
+# CSS personnalisé (identique à la version précédente)
 st.markdown("""
 <style>
 /* Cacher le menu et le footer de Streamlit */
@@ -142,24 +141,30 @@ BORING_COMPANY_SHARES = 0.90
 NEURALINK_VALUE = 8_000_000_000
 NEURALINK_SHARES = 0.90
 
-# --- Fonctions utilitaires ---
+# --- Fonction utilitaire ---
 def format_money(amount):
     return f"{amount:,.0f} $"
 
-# Récupération du prix de Tesla via Yahoo Finance
+# Fonction pour récupérer le prix de Tesla via Alpha Vantage
 @st.cache_data(ttl=60)
 def get_tesla_price():
+    ALPHA_VANTAGE_API_KEY = "BA17J8BL7DFGO78N"  # Remplacez par votre clé API Alpha Vantage
+    url = "https://www.alphavantage.co/query"
+    params = {
+        "function": "GLOBAL_QUOTE",
+        "symbol": "TSLA",
+        "apikey": ALPHA_VANTAGE_API_KEY
+    }
     try:
-        url = "https://finance.yahoo.com/quote/TSLA/"
-        headers = {"User-Agent": "Mozilla/5.0"}
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, params=params)
         response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
-        price_span = soup.find('fin-streamer', {'data-symbol': 'TSLA', 'data-field': 'regularMarketPrice'})
-        if price_span:
-            return float(price_span.text.replace(',', ''))
+        data = response.json()
+        global_quote = data.get("Global Quote")
+        if global_quote and "05. price" in global_quote:
+            price_text = global_quote["05. price"]
+            return float(price_text)
     except Exception as e:
-        st.error(f"Erreur lors de la récupération du prix de l'action Tesla : {e}")
+        st.error(f"Erreur lors de la récupération du prix via Alpha Vantage : {e}")
     return None
 
 # Calcul de la fortune détaillée
