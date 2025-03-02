@@ -1,13 +1,13 @@
 import streamlit as st
 import requests
 from datetime import datetime
-from streamlit_autorefresh import st_autorefresh
 
 # Configuration de la page
 st.set_page_config(page_title="Elon Musk Real-Time Fortune", page_icon="💰", layout="centered")
 
-# Rafraîchissement automatique toutes les 10 secondes
-st_autorefresh(interval=10_000, limit=None, key="wealth_refresh")
+# Suppression du rafraîchissement automatique
+# from streamlit_autorefresh import st_autorefresh
+# st_autorefresh(interval=10_000, limit=None, key="wealth_refresh")
 
 # CSS personnalisé (identique à la version précédente)
 st.markdown("""
@@ -146,7 +146,7 @@ def format_money(amount):
     return f"{amount:,.0f} $"
 
 # Fonction pour récupérer le prix de Tesla via Alpha Vantage
-# Retourne un tuple (price, logs). En cas de succès, logs est None.
+# Retourne un tuple (price, logs). En cas de succès, logs vaut None.
 @st.cache_data(ttl=60)
 def get_tesla_price():
     ALPHA_VANTAGE_API_KEY = "BA17J8BL7DFGO78N"  # Remplacez par votre clé API Alpha Vantage
