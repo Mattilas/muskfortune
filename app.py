@@ -146,6 +146,7 @@ def format_money(amount):
     return f"{amount:,.0f} $"
 
 # Fonction pour récupérer le prix de Tesla via Alpha Vantage
+# Retourne un tuple (price, logs). En cas de succès, logs est None.
 @st.cache_data(ttl=60)
 def get_tesla_price():
     ALPHA_VANTAGE_API_KEY = "BA17J8BL7DFGO78N"  # Remplacez par votre clé API Alpha Vantage
@@ -155,22 +156,30 @@ def get_tesla_price():
         "symbol": "TSLA",
         "apikey": ALPHA_VANTAGE_API_KEY
     }
+    logs = {}
     try:
         response = requests.get(url, params=params)
         response.raise_for_status()
+        logs["status_code"] = response.status_code
+        logs["response_excerpt"] = response.text[:1000]
         data = response.json()
+        logs["data"] = data
         global_quote = data.get("Global Quote")
         if global_quote and "05. price" in global_quote:
             price_text = global_quote["05. price"]
-            return float(price_text)
+            return float(price_text), None
+        else:
+            logs["error"] = "Clé '05. price' introuvable dans 'Global Quote'"
     except Exception as e:
-        st.error(f"Erreur lors de la récupération du prix via Alpha Vantage : {e}")
-    return None
+        logs["exception"] = str(e)
+    return None, logs
 
 # Calcul de la fortune détaillée
 def calculate_wealth():
-    price = get_tesla_price()
+    price, logs = get_tesla_price()
     if price is None:
+        # Affiche les logs uniquement en cas d'erreur
+        st.write("Données Alpha Vantage indisponibles. Logs:", logs)
         return None
     
     # Nombre total d'actions Tesla (données actualisées)
