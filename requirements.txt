@@ -3,4 +3,4 @@ streamlit-autorefresh==1.0.1
 streamlit>=0.75
 beautifulsoup4
 requests
-alpha-vantage
+alpha_vantage
