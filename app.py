@@ -149,7 +149,7 @@ def format_money(amount):
 # Retourne un tuple (price, logs). En cas de succès, logs vaut None.
 @st.cache_data(ttl=60)
 def get_tesla_price():
-    ALPHA_VANTAGE_API_KEY = "BA17J8BL7DFGO78N"  # Remplacez par votre clé API Alpha Vantage
+    ALPHA_VANTAGE_API_KEY = "NRXOBOZHEO0AT1TT"  # Remplacez par votre clé API Alpha Vantage
     url = "https://www.alphavantage.co/query"
     params = {
         "function": "GLOBAL_QUOTE",
