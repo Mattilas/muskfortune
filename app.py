@@ -240,7 +240,7 @@ if wealth:
 else:
     st.markdown('<div class="amount">Données indisponibles</div>', unsafe_allow_html=True)
 
-# Affichage des logs de débogage dans une section dédiée
+# Affichage permanent des logs de débogage pour les utilisateurs
 st.markdown("### Logs de débogage")
 for entry in logs:
     st.write(entry)
