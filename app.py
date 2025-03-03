@@ -1,22 +1,15 @@
 import streamlit as st
 import requests
-from bs4 import BeautifulSoup
 from datetime import datetime
-from streamlit_autorefresh import st_autorefresh
-
-# Liste globale pour stocker les logs de débogage
-logs = []
-
-def log(message):
-    logs.append(f"{datetime.now().strftime('%H:%M:%S')} - {message}")
 
 # Configuration de la page
 st.set_page_config(page_title="Elon Musk Real-Time Fortune", page_icon="💰", layout="centered")
 
-# Rafraîchissement automatique toutes les 10 secondes
-st_autorefresh(interval=10_000, limit=None, key="wealth_refresh")
+# Suppression du rafraîchissement automatique
+# from streamlit_autorefresh import st_autorefresh
+# st_autorefresh(interval=10_000, limit=None, key="wealth_refresh")
 
-# CSS personnalisé
+# CSS personnalisé (identique à la version précédente)
 st.markdown("""
 <style>
 /* Cacher le menu et le footer de Streamlit */
@@ -148,38 +141,45 @@ BORING_COMPANY_SHARES = 0.90
 NEURALINK_VALUE = 8_000_000_000
 NEURALINK_SHARES = 0.90
 
-# --- Fonctions utilitaires ---
+# --- Fonction utilitaire ---
 def format_money(amount):
     return f"{amount:,.0f} $"
 
-# Récupération du prix de Tesla via le site Nasdaq avec logs
+# Fonction pour récupérer le prix de Tesla via Alpha Vantage
+# Retourne un tuple (price, logs). En cas de succès, logs vaut None.
 @st.cache_data(ttl=60)
 def get_tesla_price():
+    ALPHA_VANTAGE_API_KEY = "BA17J8BL7DFGO78N"  # Remplacez par votre clé API Alpha Vantage
+    url = "https://www.alphavantage.co/query"
+    params = {
+        "function": "GLOBAL_QUOTE",
+        "symbol": "TSLA",
+        "apikey": ALPHA_VANTAGE_API_KEY
+    }
+    logs = {}
     try:
-        url = "https://www.nasdaq.com/market-activity/stocks/tsla"
-        log(f"Tentative de récupération de la page {url}")
-        headers = {"User-Agent": "Mozilla/5.0"}
-        response = requests.get(url, headers=headers)
-        log(f"Réponse HTTP reçue, code : {response.status_code}")
+        response = requests.get(url, params=params)
         response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
-        price_div = soup.find("div", class_="nsdq-quote-header__pricing-information-saleprice")
-        if price_div:
-            price_text = price_div.get_text(strip=True).replace("$", "").replace(",", "")
-            log(f"Prix extrait : {price_text}")
-            return float(price_text)
+        logs["status_code"] = response.status_code
+        logs["response_excerpt"] = response.text[:1000]
+        data = response.json()
+        logs["data"] = data
+        global_quote = data.get("Global Quote")
+        if global_quote and "05. price" in global_quote:
+            price_text = global_quote["05. price"]
+            return float(price_text), None
         else:
-            log("Balise de prix non trouvée dans le HTML.")
+            logs["error"] = "Clé '05. price' introuvable dans 'Global Quote'"
     except Exception as e:
-        log(f"Exception lors de la récupération du prix : {e}")
-        st.error(f"Erreur lors de la récupération du prix de l'action Tesla : {e}")
-    return None
+        logs["exception"] = str(e)
+    return None, logs
 
 # Calcul de la fortune détaillée
 def calculate_wealth():
-    price = get_tesla_price()
+    price, logs = get_tesla_price()
     if price is None:
-        log("Le prix n'a pas pu être récupéré.")
+        # Affiche les logs uniquement en cas d'erreur
+        st.write("Données Alpha Vantage indisponibles. Logs:", logs)
         return None
     
     # Nombre total d'actions Tesla (données actualisées)
@@ -198,7 +198,6 @@ def calculate_wealth():
     total_wealth = (tesla_wealth + spacex_wealth + xai_wealth +
                     x_wealth + boring_wealth + neuralink_wealth)
 
-    log("Calcul de la fortune complété avec succès.")
     return {
         "price": price,
         "tesla_shares": tesla_total_shares,
@@ -239,10 +238,5 @@ if wealth:
     st.markdown(details_html, unsafe_allow_html=True)
 else:
     st.markdown('<div class="amount">Données indisponibles</div>', unsafe_allow_html=True)
-
-# Affichage permanent des logs de débogage pour les utilisateurs
-st.markdown("### Logs de débogage")
-for entry in logs:
-    st.write(entry)
 
 st.markdown('</div>', unsafe_allow_html=True)
