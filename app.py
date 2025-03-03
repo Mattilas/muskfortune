@@ -1,15 +1,16 @@
 import streamlit as st
 import requests
+from bs4 import BeautifulSoup
 from datetime import datetime
+from streamlit_autorefresh import st_autorefresh
 
 # Configuration de la page
 st.set_page_config(page_title="Elon Musk Real-Time Fortune", page_icon="💰", layout="centered")
 
-# Suppression du rafraîchissement automatique
-# from streamlit_autorefresh import st_autorefresh
-# st_autorefresh(interval=10_000, limit=None, key="wealth_refresh")
+# Rafraîchissement automatique toutes les 10 secondes
+st_autorefresh(interval=10_000, limit=None, key="wealth_refresh")
 
-# CSS personnalisé (identique à la version précédente)
+# CSS personnalisé
 st.markdown("""
 <style>
 /* Cacher le menu et le footer de Streamlit */
@@ -141,45 +142,31 @@ BORING_COMPANY_SHARES = 0.90
 NEURALINK_VALUE = 8_000_000_000
 NEURALINK_SHARES = 0.90
 
-# --- Fonction utilitaire ---
+# --- Fonctions utilitaires ---
 def format_money(amount):
     return f"{amount:,.0f} $"
 
-# Fonction pour récupérer le prix de Tesla via Alpha Vantage
-# Retourne un tuple (price, logs). En cas de succès, logs vaut None.
+# Récupération du prix de Tesla via le site Nasdaq
 @st.cache_data(ttl=60)
 def get_tesla_price():
-    ALPHA_VANTAGE_API_KEY = "NRXOBOZHEO0AT1TT"  # Remplacez par votre clé API Alpha Vantage
-    url = "https://www.alphavantage.co/query"
-    params = {
-        "function": "GLOBAL_QUOTE",
-        "symbol": "TSLA",
-        "apikey": ALPHA_VANTAGE_API_KEY
-    }
-    logs = {}
     try:
-        response = requests.get(url, params=params)
+        url = "https://www.nasdaq.com/market-activity/stocks/tsla"
+        headers = {"User-Agent": "Mozilla/5.0"}
+        response = requests.get(url, headers=headers)
         response.raise_for_status()
-        logs["status_code"] = response.status_code
-        logs["response_excerpt"] = response.text[:1000]
-        data = response.json()
-        logs["data"] = data
-        global_quote = data.get("Global Quote")
-        if global_quote and "05. price" in global_quote:
-            price_text = global_quote["05. price"]
-            return float(price_text), None
-        else:
-            logs["error"] = "Clé '05. price' introuvable dans 'Global Quote'"
+        soup = BeautifulSoup(response.text, 'html.parser')
+        price_div = soup.find("div", class_="nsdq-quote-header__pricing-information-saleprice")
+        if price_div:
+            price_text = price_div.get_text(strip=True).replace("$", "").replace(",", "")
+            return float(price_text)
     except Exception as e:
-        logs["exception"] = str(e)
-    return None, logs
+        st.error(f"Erreur lors de la récupération du prix de l'action Tesla : {e}")
+    return None
 
 # Calcul de la fortune détaillée
 def calculate_wealth():
-    price, logs = get_tesla_price()
+    price = get_tesla_price()
     if price is None:
-        # Affiche les logs uniquement en cas d'erreur
-        st.write("Données Alpha Vantage indisponibles. Logs:", logs)
         return None
     
     # Nombre total d'actions Tesla (données actualisées)
