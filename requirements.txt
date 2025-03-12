@@ -4,3 +4,5 @@ streamlit>=0.75
 beautifulsoup4
 requests
 alpha_vantage
+webdriver_manager
+selenium
