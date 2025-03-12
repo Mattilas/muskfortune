@@ -124,26 +124,29 @@ st.markdown('<div class="content-wrapper">', unsafe_allow_html=True)
 # Titre de la page
 st.markdown('<h1 class="title">Fortune d\'Elon Musk en temps réel</h1>', unsafe_allow_html=True)
 
-# --- Constantes ---
-TESLA_SHARES_PERCENTAGE = 0.13      # 13% des actions détenues
-TESLA_OPTIONS_PERCENTAGE = 0.045      # 4.5% des options
+# --- Constantes mises à jour ---
+TESLA_SHARES_PERCENTAGE = 0.13      # 13% des actions détenues :contentReference[oaicite:0]{index=0}
+TESLA_OPTIONS_PERCENTAGE = 0.045      # 4.5% des options :contentReference[oaicite:1]{index=1}
 TESLA_PERSONAL_LOANS = 3_500_000_000  # Prêts personnels
 
-SPACEX_VALUE = 350_000_000_000
+SPACEX_VALUE = 350_000_000_000        # 350 milliards :contentReference[oaicite:2]{index=2}
 SPACEX_SHARES = 0.42
 
-X_INITIAL_VALUE = 44_000_000_000
-X_DEVALUATION = 0.72
+X_INITIAL_VALUE = 44_000_000_000      # Valeur initiale de X (Twitter) :contentReference[oaicite:3]{index=3}
+# Mise à jour : X est désormais dévalué de 82% (au lieu de 72%) afin d'obtenir une valeur proche de 8 milliards
+X_DEVALUATION = 0.82
 X_VALUE = X_INITIAL_VALUE * (1 - X_DEVALUATION)
 X_SHARES = 0.79
 
-XAI_VALUE = 50_000_000_000
+XAI_VALUE = 50_000_000_000            # xAI évalué à 50 milliards :contentReference[oaicite:4]{index=4}
 XAI_SHARES = 0.54
 
-BORING_COMPANY_VALUE = 7_000_000_000
+# The Boring Company est désormais évaluée à 5,7 milliards (au lieu de 7 milliards)
+BORING_COMPANY_VALUE = 5_700_000_000  
 BORING_COMPANY_SHARES = 0.90
 
-NEURALINK_VALUE = 8_000_000_000
+# Neuralink est mis à jour à 2,07 milliards (au lieu de 8 milliards) :contentReference[oaicite:5]{index=5}
+NEURALINK_VALUE = 2_070_000_000        
 NEURALINK_SHARES = 0.90
 
 # --- Fonctions utilitaires ---
@@ -178,7 +181,7 @@ def calculate_wealth():
         return None
     
     # Nombre total d'actions Tesla (données actualisées)
-    tesla_shares = 3_210_000_000  # 3.21 milliards d'actions
+    tesla_shares = 3_210_000_000  # 3.21 milliards d'actions :contentReference[oaicite:6]{index=6}
     tesla_owned_shares = tesla_shares * TESLA_SHARES_PERCENTAGE
     tesla_options_shares = tesla_shares * TESLA_OPTIONS_PERCENTAGE
     tesla_total_shares = tesla_owned_shares + tesla_options_shares
