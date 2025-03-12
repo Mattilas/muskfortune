@@ -3,6 +3,10 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 from streamlit_autorefresh import st_autorefresh
+import logging
+
+# Configuration du logging
+logging.basicConfig(level=logging.INFO)
 
 # Configuration de la page
 st.set_page_config(page_title="Elon Musk Real-Time Fortune", page_icon="💰", layout="centered")
@@ -149,8 +153,8 @@ def format_money(amount):
 # Récupération du prix de Tesla via CNBC
 @st.cache_data(ttl=60)
 def get_tesla_price():
+    url = "https://www.cnbc.com/quotes/TSLA"
     try:
-        url = "https://www.cnbc.com/quotes/TSLA"
         headers = {"User-Agent": "Mozilla/5.0"}
         response = requests.get(url, headers=headers)
         response.raise_for_status()
@@ -159,7 +163,11 @@ def get_tesla_price():
         price_span = soup.find('span', class_="QuoteStrip-lastPrice")
         if price_span:
             return float(price_span.text.strip().replace(',', ''))
+        else:
+            logging.error(f"Prix de Tesla indisponible : la balise avec la classe 'QuoteStrip-lastPrice' n'a pas été trouvée sur {url}.")
+            st.error("Données du prix de l'action Tesla indisponibles.")
     except Exception as e:
+        logging.error(f"Erreur lors de la récupération du prix de l'action Tesla depuis {url} : {e}")
         st.error(f"Erreur lors de la récupération du prix de l'action Tesla : {e}")
     return None
 
